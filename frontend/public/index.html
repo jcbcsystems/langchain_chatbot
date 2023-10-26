@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGPT</title>
+    <!-- CSRF Token -->
+    <link rel="stylesheet" href="./style.css">
+    <!-- Google Fonts Link For Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+</head>
+<body>
+    <section class="chat-container"></section>
+    <section class="typing-container">
+        <div class="typing-content">
+            <div class="typing-textarea">
+                <textarea name="chat-input" id="chat-input" spellcheck="false" placeholder="Coloca mensaje aqui" required></textarea>
+                <span id="send-btn" class="material-symbols-rounded">send</span>
+            </div>
+            <div class="typing-controls">
+                <span id="theme-btn" class="material-symbols-rounded">light_mode</span>
+                <span id="delete-btn" class="material-symbols-rounded">delete</span>
+            </div>
+        </div>
+    </section>
+<script>
+    let csrf_token = document.querySelector('meta[name="csrf-token"]');
+
+    const chatInput = document.querySelector('#chat-input');
+    const sendButton = document.querySelector('#send-btn');
+    const themeButton = document.querySelector('#theme-btn');
+    const deleteButton = document.querySelector('#delete-btn');
+    const chatContainer = document.querySelector('.chat-container');
+    const imgChatBot = "./images/chatbot.jpg";
+    const imgUser = "./images/user.jpg";
+
+    let userText = null;
+    let messages = [];
+    const API_KEY = "PASTE-HERE";
+
+    const createChatElement = (content, className) => {
+        const chatDiv = document.createElement('div');
+        chatDiv.classList.add('chat', className);
+        chatDiv.innerHTML = content;
+        return chatDiv;
+    }
+
+    const getChatResponse = async (incomingChatDiv) => {
+        const API_URL = "http://localhost:8001/chatbot";
+        const pElement = document.createElement('p');
+        
+        /* messages.push({
+            role: 'user',
+            content: userText
+        });
+        */
+        
+        let promt = {
+            "prompt": userText
+        };
+        const requestOptions = {
+            method: 'POST',
+            headers: {
+                'x-api-key': 'EW2Yl7NOOsYV7v8bxB1cO7WgAPSb5h56',
+            },
+            body: JSON.stringify(promt),
+        }
+
+        try {
+            const response = await (await fetch(API_URL, requestOptions)).json();
+            pElement.textContent = response.message;
+            /* let message = response.data.choices[0].message;
+            messages.push({
+                role: message.role,
+                content: message.content
+            });
+            pElement.textContent = message.content; */
+        } catch (error) {
+            pElement.classList.add("error");
+            pElement.textContent = "Oops! Something went wrong while retrieving the response. Please try again.";
+        }
+
+        incomingChatDiv.querySelector(".typing-animation").remove();
+        incomingChatDiv.querySelector(".chat-details").appendChild(pElement);
+        //localStorage.setItem("all-chats", chatContainer.innerHTML);
+        chatContainer.scrollTo(0, chatContainer.scrollHeight);
+    }
+
+    const showTypingAnimation = () => {
+        const html = `
+            <div class="chat-content">
+                <div class="chat-details">
+                    <img src="${imgChatBot}" alt="chatbot-img" >
+                    <div class="typing-animation">
+                        <div class="typing-dot" style="--delay: 0.2s"></div>
+                        <div class="typing-dot" style="--delay: 0.3s"></div>
+                        <div class="typing-dot" style="--delay: 0.4s"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        const incomingChatDiv = createChatElement(html, "incoming");
+        chatContainer.appendChild(incomingChatDiv);
+        chatContainer.scrollTo(0, chatContainer.scrollHeight);
+        getChatResponse(incomingChatDiv);
+    }
+
+    const handleOutgoingChat = () => {
+        userText = chatInput.value.trim(); // Get chatInput value and remove extra spaces
+        if(!userText) return; // If chatInput is empty return from here
+        // Clear the input field and reset its height
+        chatInput.value = "";
+        chatInput.style.height = `${initialInputHeight}px`;
+        const html = `<div class="chat-content">
+                        <div class="chat-details">
+                            <img src="${imgUser}" alt="user-img">
+                            <p>${userText}</p>
+                        </div>
+                    </div>`;
+        // Create an outgoing chat div with user's message and append it to chat container
+        const outgoingChatDiv = createChatElement(html, "outgoing");
+        chatContainer.querySelector(".default-text")?.remove();
+        chatContainer.appendChild(outgoingChatDiv);
+        chatContainer.scrollTo(0, chatContainer.scrollHeight);
+        setTimeout(showTypingAnimation, 500);
+    }
+
+    themeButton.addEventListener("click", () => {
+        document.body.classList.toggle("light-mode");
+        //localStorage.setItem("themeColor", themeButton.innerText);
+        themeButton.innerText = document.body.classList.contains("light-mode") ? "dark_mode" : "light_mode";
+    });
+    
+    const initialInputHeight = chatInput.scrollHeight;
+
+    chatInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 800) {
+            e.preventDefault();
+            handleOutgoingChat();
+        }
+    });
+
+    sendButton.addEventListener("click", handleOutgoingChat);
+</script>
+</body>
+</html>

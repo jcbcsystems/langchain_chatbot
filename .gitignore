@@ -1,0 +1,15 @@
+/backend/__pycache__
+/backend/env
+/backend/.env
+/backend/.fleet
+/backend/.idea
+/backend/.vscode
+/backend/awstats-icon
+/backend/awstatsicons
+/backend/icon
+/backend/docs
+/backend/db
+/backend/nohup.out
+/frontend/.devcontainer
+/frontend/docker-compose.yml
+/frontend/node_modules
